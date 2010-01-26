@@ -1,0 +1,35 @@
+
+
+actor ReadT {
+	port {
+		in inbox;
+		out inboxACK;
+		
+		out outbox;
+		in outboxACK;
+		
+		in trigger;
+	} implementation {
+		components ComponentReadT, TimerC, RandomLFSR;
+		
+//		ComponentReadT.TempADC -> Temp.TempADC;
+		ComponentReadT.Timer -> TimerC.Timer[unique("Timer")];
+		ComponentReadT.Random -> RandomLFSR.Random;
+//	  ComponentReadT.SensorControl -> Temp.StdControl;
+		
+		// port -> function 
+		inbox -> ComponentReadT.InputInterface.output;
+		trigger -> ComponentReadT.InputInterface.trigger;
+		outboxACK -> ComponentReadT.OutputInterface.outputComplete;
+		
+		// function -> port
+		ComponentReadT.OutputInterface.output -> outbox;
+		ComponentReadT.InputInterface.outputComplete -> inboxACK;
+
+     actorControl {
+     	// Connect these interfaces to Main for application initialization.
+      ComponentReadT.StdControl;
+    }
+	}
+}
+

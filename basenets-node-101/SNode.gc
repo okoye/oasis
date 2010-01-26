@@ -1,0 +1,55 @@
+
+
+
+application SNode {
+	implementation {
+		// Declare actors
+		actor NodeManager, ServiceDiscovery, Composer, Object, ReadT;
+
+		// Connect global to local TinyGUYS variable names.
+
+		// Connect actor output ports to input ports.
+		// 2. connect node manager to other actors
+		NodeManager.to_sdp =[2]=> ServiceDiscovery.inbox;
+		NodeManager.to_readt =[2]=> ReadT.inbox;
+		NodeManager.to_composer =[2]=> Composer.inbox;
+		NodeManager.service_request =[2]=> ServiceDiscovery.from_nodeman;
+		
+		// acks 
+		ServiceDiscovery.inboxACK =[2]=> NodeManager.to_sdpACK;
+		ServiceDiscovery.from_nodemanACK =[2]=> NodeManager.service_requestACK;
+		Composer.inboxACK =[2]=> NodeManager.to_composerACK;
+		ReadT.inboxACK =[2]=> NodeManager.to_readtACK;
+		
+		// 2. connect other actors to node manager
+		ServiceDiscovery.to_nodeman =[2]=> NodeManager.service_info;
+		ServiceDiscovery.outbox =[2]=> NodeManager.from_sdp;
+		Composer.outbox =[2]=> NodeManager.from_composer;
+		ReadT.outbox =[2]=> NodeManager.from_readt;
+		
+		// acks
+		NodeManager.service_infoACK =[2]=> ServiceDiscovery.to_nodemanACK;
+		NodeManager.from_sdpACK =[2]=> ServiceDiscovery.outboxACK;
+		NodeManager.from_composerACK =[2]=> Composer.outboxACK;
+		NodeManager.from_readtACK =[2]=> ReadT.outboxACK;
+		
+		// triggers
+		NodeManager.objectTrigger =[2]=> Object.trigger;
+		Composer.composerDone =[2]=> NodeManager.composerDone;
+		Object.init =[2]=> ReadT.trigger;
+		NodeManager.readTinit =[2]=> ReadT.trigger;
+
+		// connect other actors together (composer and service discovery)
+		Composer.service_request =[2]=> ServiceDiscovery.from_composer;
+		ServiceDiscovery.to_composer =[2]=> Composer.service_info;
+		
+		// acks
+		ServiceDiscovery.from_composerACK =[2]=> Composer.service_requestACK;
+		Composer.service_infoACK =[2]=> ServiceDiscovery.to_composerACK;
+		
+		appstart {
+			// Initial tokens to place in port queues.
+		}
+	}
+}
+

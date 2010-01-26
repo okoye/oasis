@@ -1,0 +1,23 @@
+
+
+actor Object {
+	port {
+		in trigger;
+		out init;
+	} implementation {
+		// declare components
+		components ObjectC;
+		
+		// port -> function 
+		trigger -> ObjectC.ObjectInterface.trigger;
+		
+		// function -> port 
+		ObjectC.ServiceInterface.trigger -> init;
+
+     actorControl {
+     	// Connect these interfaces to Main for application initialization.
+      ObjectC.StdControl;
+    }
+	}
+}
+

@@ -1,0 +1,37 @@
+
+
+actor Localize {
+	port {
+		in inbox_port1;
+		in inbox_port2;
+		in inbox_port3;
+		in inbox_port4;
+//		in inbox_port5;
+		out inboxACK;
+		
+		out outbox;
+		in outboxACK;
+	} implementation {
+		components ComponentLocalize, Int3ToRfm;
+		
+		ComponentLocalize.Send -> Int3ToRfm.Int3Output;
+		
+		// port -> function 
+		inbox_port1 -> ComponentLocalize.InputInterface.output_port1;
+		inbox_port2 -> ComponentLocalize.InputInterface.output_port2;
+		inbox_port3 -> ComponentLocalize.InputInterface.output_port3;
+		inbox_port4 -> ComponentLocalize.InputInterface.output_port4;
+//		inbox_port5 -> ComponentLocalize.InputInterface.output_port5;
+		outboxACK -> ComponentLocalize.OutputInterface.outputComplete;
+		
+		// function -> port
+		ComponentLocalize.OutputInterface.output -> outbox;
+		ComponentLocalize.InputInterface.outputComplete -> inboxACK;
+
+     actorControl {
+     	// Connect these interfaces to Main for application initialization.
+      ComponentLocalize.StdControl;
+    }
+	}
+}
+

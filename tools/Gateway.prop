@@ -1,0 +1,18 @@
+# Property file used to set parameters for OASIS Gateway application.
+
+# -----------------------------------------------------------------------
+# inquiryURL: The URL for the inquiry API of the target UDDI registry
+# -----------------------------------------------------------------------
+inquiryURL = http://localhost:8080/juddi/inquiry
+
+# -----------------------------------------------------------------------
+# Wind Direction Service values
+# -----------------------------------------------------------------------
+# accessPoint=http://127.0.0.1:8080/axis/WindDirection.jws
+31_tModelKey=uuid:6FE22870-E11B-11DA-A83E-F8EFC110D8AE
+31_serviceKey=6FC9BE70-E11B-11DA-A83E-B905D7FE939B
+31_method=getLocalWindVelocity
+31_inputDataType=BYTE
+31_outputDataType=BYTE
+31_inputDataDelimiter=SPACE
+31_outputDataDelimiter=SPACE

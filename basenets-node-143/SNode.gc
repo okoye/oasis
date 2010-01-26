@@ -1,0 +1,77 @@
+
+
+
+application SNode {
+	parameter {
+		uint32_t restime = 0;
+	}
+	implementation {
+		// Declare actors
+		actor NodeManager, ServiceDiscovery, Composer, Localize, Notify, Object, ReadT, Wind;
+
+		// Connect global to local TinyGUYS variable names.
+		restime = ReadT.restime;
+		restime = Notify.restime;
+
+		// Connect actor output ports to input ports.
+		// 2. connect node manager to other actors
+		NodeManager.to_sdp =[2]=> ServiceDiscovery.inbox;
+		NodeManager.to_localize_port1 =[2]=> Localize.inbox_port1;
+		NodeManager.to_localize_port2 =[2]=> Localize.inbox_port2;
+		NodeManager.to_localize_port3 =[2]=> Localize.inbox_port3;
+		NodeManager.to_localize_port4 =[2]=> Localize.inbox_port4;
+//		NodeManager.to_localize_port5 =[2]=> Localize.inbox_port5;
+		NodeManager.to_notify =[2]=> Notify.inbox;
+		NodeManager.to_readt =[2]=> ReadT.inbox;
+		NodeManager.to_wind =[2]=> Wind.inbox;
+		NodeManager.to_composer =[2]=> Composer.inbox;
+		NodeManager.service_request =[2]=> ServiceDiscovery.from_nodeman;
+		
+		// acks 
+		ServiceDiscovery.inboxACK =[2]=> NodeManager.to_sdpACK;
+		ServiceDiscovery.from_nodemanACK =[2]=> NodeManager.service_requestACK;
+		Composer.inboxACK =[2]=> NodeManager.to_composerACK;
+		Localize.inboxACK =[2]=> NodeManager.to_localizeACK;
+		Notify.inboxACK =[2]=> NodeManager.to_notifyACK;
+		ReadT.inboxACK =[2]=> NodeManager.to_readtACK;
+		Wind.inboxACK =[2]=> NodeManager.to_windACK;
+		
+		// 2. connect other actors to node manager
+		ServiceDiscovery.to_nodeman =[2]=> NodeManager.service_info;
+		ServiceDiscovery.outbox =[2]=> NodeManager.from_sdp;
+		Composer.outbox =[2]=> NodeManager.from_composer;
+		Localize.outbox =[2]=> NodeManager.from_localize;
+		Notify.outbox =[2]=> NodeManager.from_notify;
+		ReadT.outbox =[2]=> NodeManager.from_readt;
+		Wind.outbox =[2]=> NodeManager.from_wind;
+		
+		// acks
+		NodeManager.service_infoACK =[2]=> ServiceDiscovery.to_nodemanACK;
+		NodeManager.from_sdpACK =[2]=> ServiceDiscovery.outboxACK;
+		NodeManager.from_composerACK =[2]=> Composer.outboxACK;
+		NodeManager.from_localizeACK =[2]=> Localize.outboxACK;
+		NodeManager.from_notifyACK =[2]=> Notify.outboxACK;
+		NodeManager.from_readtACK =[2]=> ReadT.outboxACK;
+		NodeManager.from_windACK =[2]=> Wind.outboxACK;
+		
+		// triggers
+		NodeManager.objectTrigger =[2]=> Object.trigger;
+		NodeManager.readTinit =[2]=> ReadT.trigger;
+		NodeManager.windinit =[2]=> Wind.trigger;
+		Composer.composerDone =[2]=> NodeManager.composerDone;
+		Object.init =[2]=> ReadT.trigger;
+
+		// connect other actors together (composer and service discovery)
+		Composer.service_request =[2]=> ServiceDiscovery.from_composer;
+		ServiceDiscovery.to_composer =[2]=> Composer.service_info;
+		
+		// acks
+		ServiceDiscovery.from_composerACK =[2]=> Composer.service_requestACK;
+		Composer.service_infoACK =[2]=> ServiceDiscovery.to_composerACK;
+		
+		appstart {
+			// Initial tokens to place in port queues.
+		}
+	}
+}
+

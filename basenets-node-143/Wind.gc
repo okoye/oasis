@@ -1,0 +1,32 @@
+
+
+actor Wind {
+	port {
+		in inbox;
+		out inboxACK;
+		
+		out outbox;
+		in outboxACK;
+		
+		in trigger;
+	} implementation {
+		components ComponentWind, TimerC;
+		
+		ComponentWind.Timer -> TimerC.Timer[unique("Timer")];
+		
+		// port -> function 
+		inbox -> ComponentWind.InputInterface.output;
+		trigger -> ComponentWind.InputInterface.trigger;
+		outboxACK -> ComponentWind.OutputInterface.outputComplete;
+		
+		// function -> port
+		ComponentWind.OutputInterface.output -> outbox;
+		ComponentWind.InputInterface.outputComplete -> inboxACK;
+
+     actorControl {
+     	// Connect these interfaces to Main for application initialization.
+      ComponentWind.StdControl;
+    }
+	}
+}
+

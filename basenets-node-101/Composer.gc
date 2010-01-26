@@ -1,0 +1,51 @@
+
+
+actor Composer {
+
+	port {
+		in inbox;				// service_graph_message
+		out inboxACK;
+		
+		out outbox;				// service_bind_message
+		in outboxACK; 
+		
+		in service_info;		// service_info_message
+		out service_infoACK;
+		
+		out service_request;	// service_request
+		in service_requestACK;
+		
+		out composerDone;		// notification that service graph is composed
+	} 
+	
+	implementation {
+	
+		// declare components
+		components ComposerC, TimerC, Int3ToRfm;
+		
+		ComposerC.TimeoutTimer -> TimerC.Timer[unique("Timer")];
+		ComposerC.Send -> Int3ToRfm.Int3Output;
+		
+		// port -> function 
+		inbox -> ComposerC.ComposerInterface.output;
+		service_info -> ComposerC.RequestInterface.outputInfo;
+
+		outboxACK -> ComposerC.BindInterface.outputComplete;
+		service_requestACK -> ComposerC.RequestInterface.requestAccepted;
+		
+		// function -> port 
+		ComposerC.BindInterface.output -> outbox;
+		ComposerC.RequestInterface.serviceRequest -> service_request;
+		
+		ComposerC.ComposerInterface.outputComplete -> inboxACK;
+		ComposerC.RequestInterface.outputClear -> service_infoACK;
+		ComposerC.ComposerInterface.composed -> composerDone;
+
+		actorControl {
+			// Connect these interfaces to Main for application initialization.
+			ComposerC.StdControl;
+			TimerC.StdControl;
+		}
+	}
+}
+

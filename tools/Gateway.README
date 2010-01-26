@@ -1,0 +1,5 @@
+To compile:
+C:\tinyos\cygwin\opt\tinyos-1.x\tools\java\net\tinyos\tools>javac -classpath %CLASSPATH%;%JUDDI_CLASS_PATH%;..\..\..\ Gateway.java
+
+To run:
+C:\tinyos\cygwin\opt\tinyos-1.x\tools\java\net\tinyos\tools>java -classpath %CLASSPATH%;%JUDDI_CLASS_PATH%;..\..\..\ net.tinyos.tools.Gateway

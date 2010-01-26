@@ -1,0 +1,56 @@
+
+/** 
+	This actor is responsible for service discovery. 
+	It provides two request ports and two information ports for node manager and composer each. 
+	Node-manager or composer can request service information and service-discovery actor would return the information message.
+*/
+
+actor ServiceDiscovery {
+	port {
+		in inbox;
+		out inboxACK;
+		
+		out outbox;
+		in outboxACK;
+
+		in from_nodeman;
+		out from_nodemanACK;
+		
+		in from_composer;
+		out from_composerACK;
+
+		out to_nodeman;
+		in to_nodemanACK;
+		
+		out to_composer;
+		in to_composerACK;
+	} implementation {
+		components SDP, SDMsgPitM;
+		
+		SDP.SDMsgBuffer -> SDMsgPitM.Buffer;
+		
+		// port -> function
+		inbox -> SDP.SDInterface.output;
+		from_nodeman -> SDP.NodeRequest.serviceRequest;
+		from_composer -> SDP.ComposerRequest.serviceRequest;
+		
+		outboxACK -> SDP.OutInterface.outputComplete;
+		to_nodemanACK -> SDP.NodeRequest.outputClear;
+		to_composerACK -> SDP.ComposerRequest.outputClear;
+		
+		// function -> port 
+		SDP.OutInterface.output -> outbox;
+		SDP.NodeRequest.outputInfo -> to_nodeman;
+		SDP.ComposerRequest.outputInfo -> to_composer;
+
+		SDP.SDInterface.outputComplete -> inboxACK;
+		SDP.NodeRequest.requestAccepted -> from_nodemanACK;
+		SDP.ComposerRequest.requestAccepted -> from_composerACK;
+
+     actorControl {
+     	// Connect these interfaces to Main for application initialization.
+      SDP.StdControl;
+    }
+	}
+}
+

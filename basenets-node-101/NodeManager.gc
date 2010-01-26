@@ -1,0 +1,91 @@
+
+/** 
+	Node Manager: 
+	1. receives and sends messages over radio using RcvBigMsgC and SendBigMsgC components. 
+	2. Dispatches messages to appropriate actors 
+	3. Binds local services to their destinations based on the service application being executed currently
+	4. Handles communication failure by re-discovering services
+*/
+
+//includes Service.h;
+
+actor NodeManager {
+	port {
+		out to_sdp;	// SDMsg 
+		in to_sdpACK;
+		
+		out to_readt;	// ServiceMsg
+		in to_readtACK;
+		
+		out to_composer;	// ServiceMsg 
+		in to_composerACK;
+		
+		out service_request; // uint16_t 
+		in service_requestACK;
+		
+		in from_sdp; // SDMsg
+		out from_sdpACK;
+		
+		in from_readt; // ServiceMsg
+		out from_readtACK;
+		
+		in from_composer; // SBindMsg
+		out from_composerACK;
+		
+		in service_info; // SDMsg
+		out service_infoACK;
+		
+		out objectTrigger;
+		out readTinit;
+		in composerDone;
+	} 
+	implementation {
+		// declare components
+		components RcvBigMsgC, NodeInC, NodeOutC, SendBigMsgC, TimerC, Int3ToRfm;
+		
+		// connetion betweem components
+		NodeInC.InternalInterface -> NodeOutC.InternalInterface;
+		RcvBigMsgC.ReceiveBigMsg -> NodeInC.InputInterface;
+		NodeOutC.SendInterface -> SendBigMsgC.SendBigMsg;
+		
+		NodeInC.Timer -> TimerC.Timer[unique("Timer")];
+		NodeInC.Send -> Int3ToRfm.Int3Output;
+		
+		// port -> function
+		from_sdp -> NodeOutC.SDInterface.output;
+		from_readt -> NodeOutC.ReadTInterface.output;
+		from_composer -> NodeOutC.ServiceBindInterface.output;
+		service_info -> NodeOutC.CommFailureInterface.outputInfo;
+
+		composerDone -> NodeInC.ComposerInterface.composed;
+		
+		to_sdpACK -> NodeInC.SDInterface.outputComplete;
+		to_readtACK -> NodeInC.ReadTInterface.outputComplete;
+		to_composerACK -> NodeInC.ComposerInterface.outputComplete;
+		service_requestACK -> NodeOutC.CommFailureInterface.requestAccepted;
+
+		// function -> port
+		NodeInC.SDInterface.output -> to_sdp;
+		NodeInC.ReadTInterface.output -> to_readt;
+		NodeInC.ComposerInterface.output -> to_composer;
+		NodeOutC.CommFailureInterface.serviceRequest -> service_request;
+		
+		NodeInC.ObjectInterface.trigger -> objectTrigger;
+		NodeInC.ReadTInterface.trigger -> readTinit;
+		
+		NodeOutC.SDInterface.outputComplete -> from_sdpACK;
+		NodeOutC.ReadTInterface.outputComplete -> from_readtACK;
+		NodeOutC.ServiceBindInterface.outputComplete -> from_composerACK;
+		NodeOutC.CommFailureInterface.outputClear -> service_infoACK;
+
+     actorControl {
+     	// Connect these interfaces to Main for application initialization.
+      RcvBigMsgC.StdControl;
+      NodeInC.StdControl;
+      NodeOutC.StdControl;
+      SendBigMsgC.StdControl;
+    }
+	}
+}
+
+

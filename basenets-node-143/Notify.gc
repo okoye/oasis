@@ -1,0 +1,38 @@
+
+
+actor Notify {
+	port {
+		in inbox;
+		out inboxACK;
+		
+		out outbox;
+		in outboxACK;
+	} 
+	parameter {
+		uint32_t restime;
+	}
+	implementation {
+		components ComponentNotify, LedsC, Int3ToRfm, SysTimeC;
+		
+		ComponentNotify.Leds -> LedsC.Leds;
+		ComponentNotify.Send -> Int3ToRfm.Int3Output;
+
+		(inbox, restime) -> ComponentNotify.myfunction;
+
+		ComponentNotify.SysTime -> SysTimeC.SysTime;
+		
+		// port -> function 
+		inbox -> ComponentNotify.InputInterface.output;
+		outboxACK -> ComponentNotify.OutputInterface.outputComplete;
+		
+		// function -> port
+		ComponentNotify.OutputInterface.output -> outbox;
+		ComponentNotify.InputInterface.outputComplete -> inboxACK;
+
+     actorControl {
+     	// Connect these interfaces to Main for application initialization.
+      ComponentNotify.StdControl;
+    }
+	}
+}
+
